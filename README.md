@@ -1,4 +1,5 @@
 #Zoom Auth microservice
+This micro servise use rabit mq and redis to autorize  user 
 # DEVELOPER GUID
 
 introduce .env variable

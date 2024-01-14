@@ -37,9 +37,14 @@ app.use(express.json());
 //   BINDING_KEY,
 //   "nwhhvvvvvvvvvvvvvvvvvhsss"
 // );
+export let rabbitMqChannelToReciveData
+( async function (){
+  rabbitMqChannelToReciveData = await amqplib_CreateChannel("QueueName_redis_userRegistrationData", "BindingKey_Aurhorization");
+//revive data from queue (channel of connection, queue name, special binding key of exchanage to queue)
+await amqplib_SubscribeChannel(rabbitMqChannelToReciveData, "st1", BINDING_KEY);
 
-// //revive data from queue (channel of connection, queue name, special binding key of exchanage to queue)
-// await amqplib_SubscribeChannel(channel, "st1", BINDING_KEY);
+})()
+
 
 
 // Define a route
