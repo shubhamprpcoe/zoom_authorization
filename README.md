@@ -38,6 +38,18 @@ add this extra rules to eslint config
     semi: [2, 'always']
 
   }
+
+  To install redis by docker 
+  docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+  it will return id fe4dd635608804a2fe5ff3d7a1e6f9d12edb46dbe0347f7be9edec90c83d1702
+
+  To intract woith radis cli 
+  docker ps
+  docker exec -it fe4dd6356088 bash
+  redis-cli ping
+
+  now it will on local http://localhost:8001/redis-stack/browser
 # NOTES
 How message broker keys are workig
 

@@ -2,13 +2,14 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import {} from "dotenv/config";
-// import { connectToDataBase } from "./Utils/Config/connectdb.js";
-// import { router } from "./Router/SignUpRoute.js";
 import {
   amqplib_CreateChannel,
   amqplib_PublishChannel,
   amqplib_SubscribeChannel,
 } from "./Utils/RabitMq/RabitMq.js";
+
+import { connectToRedis } from "./Utils/Redis/connectRedis.js";
+import { setRedisData } from "./Utils/Redis/redis.js";
 
 const app = express();
 
@@ -21,31 +22,36 @@ app.use(cookieParser());
 const { DATABASE_URL, PORT, BINDING_KEY } = process.env;
 const port = PORT || 5001;
 
-// Connect to Database
-// connectToDataBase(DATABASE_URL);
 
 app.use(express.json());
 
-
-// // connect to rabirmq channel (queue name, special binding key of exchanage to queue)
-// export let channel = await amqplib_CreateChannel("st1", "newQuw");
-
-// //Publish data to queue(  channel of connection, queue name, special binding key of exchanage to queue , and messsage we want to share )
-// await amqplib_PublishChannel(
-//   channel,
-//   "st1",
-//   BINDING_KEY,
-//   "nwhhvvvvvvvvvvvvvvvvvhsss"
-// );
-export let rabbitMqChannelToReciveData
+//connect to redis
+let redisClient
 ( async function (){
-  rabbitMqChannelToReciveData = await amqplib_CreateChannel("QueueName_redis_userRegistrationData", "BindingKey_Aurhorization");
-//revive data from queue (channel of connection, queue name, special binding key of exchanage to queue)
-await amqplib_SubscribeChannel(rabbitMqChannelToReciveData, "st1", BINDING_KEY);
+   redisClient = await connectToRedis();
 
 })()
 
+// // connect to rabirmq channel (queue name, special binding key of exchanage to queue)
+export let rabbitMqChannelToReciveData;
+(async function () {
+  rabbitMqChannelToReciveData = await amqplib_CreateChannel(
+    "QueueName_redis_userRegistrationData",
+    "BindingKey_Aurhorization"
+  );
+  //revive data from queue (channel of connection, queue name, special binding key of exchanage to queue)
+  let data = await amqplib_SubscribeChannel(
+    rabbitMqChannelToReciveData,
+    "st1",
+    BINDING_KEY
+  );
 
+  if (data) {
+    let recivedData = JSON.parse(data);
+    
+    setRedisData(redisClient, recivedData.token, recivedData.expires);
+  }
+})();
 
 // Define a route
 

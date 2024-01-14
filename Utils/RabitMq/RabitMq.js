@@ -28,16 +28,39 @@ export const amqplib_PublishChannel = async( channel,Queue_Name, Binding_key, me
     }
 }
 
-export const amqplib_SubscribeChannel = async(channel,Queue_Name, Binding_key,  ) => {
-    const appQueue = await channel.assertQueue( Queue_Name ) // getting queue
-    console.log(appQueue)
-    channel.bindQueue( appQueue.queue, EXCHANGE_NAME, Binding_key )
-    //we are binding Queue with exchange eg.PRODUCER==> EXCHANGE/DISTRIBUTER ==> 1) binding KEY_one--> QUEUE==>CONSUMER_ONE , 2)binding KEY_two--> QUEUE==>CONSUMER_TWO
+// export const amqplib_SubscribeChannel = async(channel,Queue_Name, Binding_key,  ) => {
+//     const appQueue = await channel.assertQueue( Queue_Name ) // getting queue
+//     let a= 
+//     console.log(appQueue)
+//     channel.bindQueue( appQueue.queue, EXCHANGE_NAME, Binding_key )
+//     //we are binding Queue with exchange eg.PRODUCER==> EXCHANGE/DISTRIBUTER ==> 1) binding KEY_one--> QUEUE==>CONSUMER_ONE , 2)binding KEY_two--> QUEUE==>CONSUMER_TWO
 
-    channel.consume( appQueue.queue, data =>{
-        console.log("recive data")
-        console.log(data.content.toString())
-        channel.ack(data)
+//     channel.consume( appQueue.queue, data =>{
+//         // console.log("recive data")
+//         console.log(data.content.toString()) 
+//         return   data 
+//         channel.ack(data)
 
-    })
-}
+//     })
+
+   
+// }
+
+export const amqplib_SubscribeChannel = (channel, Queue_Name, Binding_key) => {
+    return new Promise((resolve, reject) => {
+      channel.assertQueue(Queue_Name).then((appQueue) => {
+        console.log(appQueue);
+        channel.bindQueue(appQueue.queue, EXCHANGE_NAME, Binding_key);
+  
+        channel.consume(appQueue.queue, (data) => {
+          const message = data.content.toString();
+          channel.ack(data);
+          resolve(message); // Resolve the promise with the received message
+        });
+  
+      }).catch((error) => {
+        reject(error); // Reject the promise in case of an error
+      });
+    });
+  };
+  
